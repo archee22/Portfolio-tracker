@@ -1,0 +1,104 @@
+# cli_frontend.py - Command-Line Interface to interact with the backend
+
+import requests
+import json
+
+BASE_URL = 'http://127.0.0.1:5000/api/transactions'
+
+def add_transaction():
+    """Prompts for and adds a new transaction."""
+    print("\n--- Add New Transaction ---")
+    account_id = int(input("Enter Account ID: "))
+    ticker_symbol = input("Enter Ticker Symbol: ")
+    transaction_type = input("Enter Transaction Type (BUY, SELL, DIVIDEND): ").upper()
+    shares = float(input("Enter Number of Shares: "))
+    price_per_share = float(input("Enter Price per Share: "))
+    
+    data = {
+        "account_id": account_id,
+        "ticker_symbol": ticker_symbol,
+        "transaction_type": transaction_type,
+        "shares": shares,
+        "price_per_share": price_per_share,
+        "total_amount": shares * price_per_share
+    }
+
+    try:
+        response = requests.post(BASE_URL, json=data)
+        response.raise_for_status() # Raise an exception for bad status codes
+        print("Response:", json.dumps(response.json(), indent=4))
+    except requests.exceptions.RequestException as e:
+        print(f"Error adding transaction: {e}")
+
+def get_transaction():
+    """Retrieves and displays a single transaction."""
+    print("\n--- Get Transaction Details ---")
+    transaction_id = int(input("Enter Transaction ID to retrieve: "))
+    
+    try:
+        response = requests.get(f"{BASE_URL}/{transaction_id}")
+        response.raise_for_status()
+        print("Transaction Details:", json.dumps(response.json(), indent=4))
+    except requests.exceptions.RequestException as e:
+        print(f"Error retrieving transaction: {e}")
+
+def update_transaction():
+    """Updates an existing transaction."""
+    print("\n--- Update Existing Transaction ---")
+    transaction_id = int(input("Enter Transaction ID to update: "))
+    shares = float(input("Enter new number of Shares: "))
+    price_per_share = float(input("Enter new Price per Share: "))
+    
+    data = {
+        "shares": shares,
+        "price_per_share": price_per_share,
+        "total_amount": shares * price_per_share
+    }
+
+    try:
+        response = requests.put(f"{BASE_URL}/{transaction_id}", json=data)
+        response.raise_for_status()
+        print("Response:", json.dumps(response.json(), indent=4))
+    except requests.exceptions.RequestException as e:
+        print(f"Error updating transaction: {e}")
+
+def delete_transaction():
+    """Deletes a transaction."""
+    print("\n--- Delete a Transaction ---")
+    transaction_id = int(input("Enter Transaction ID to delete: "))
+
+    try:
+        response = requests.delete(f"{BASE_URL}/{transaction_id}")
+        response.raise_for_status()
+        print("Response:", json.dumps(response.json(), indent=4))
+    except requests.exceptions.RequestException as e:
+        print(f"Error deleting transaction: {e}")
+
+def main():
+    """Main function to run the CLI."""
+    while True:
+        print("\n--- Financial Portfolio Tracker CLI ---")
+        print("1. Add a transaction (CREATE)")
+        print("2. Get a transaction (READ)")
+        print("3. Update a transaction (UPDATE)")
+        print("4. Delete a transaction (DELETE)")
+        print("5. Exit")
+        
+        choice = input("Enter your choice: ")
+        
+        if choice == '1':
+            add_transaction()
+        elif choice == '2':
+            get_transaction()
+        elif choice == '3':
+            update_transaction()
+        elif choice == '4':
+            delete_transaction()
+        elif choice == '5':
+            print("Exiting.")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()

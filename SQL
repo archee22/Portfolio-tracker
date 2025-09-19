@@ -1,0 +1,54 @@
+-- Schema for the financial portfolio tracker
+
+-- Table for a single User (since the app is for a single user)
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table for different accounts (e.g., brokerage, retirement)
+CREATE TABLE accounts (
+    account_id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(user_id),
+    account_name VARCHAR(100) NOT NULL,
+    account_type VARCHAR(50) NOT NULL,
+    UNIQUE (user_id, account_name)
+);
+
+-- Table for tracking individual assets
+CREATE TABLE assets (
+    asset_id SERIAL PRIMARY KEY,
+    account_id INT NOT NULL REFERENCES accounts(account_id),
+    ticker_symbol VARCHAR(10) NOT NULL,
+    asset_name VARCHAR(255),
+    asset_class VARCHAR(50),
+    UNIQUE (account_id, ticker_symbol)
+);
+
+-- Table for logging all transactions
+CREATE TABLE transactions (
+    transaction_id SERIAL PRIMARY KEY,
+    account_id INT NOT NULL REFERENCES accounts(account_id),
+    ticker_symbol VARCHAR(10) NOT NULL,
+    transaction_type VARCHAR(20) NOT NULL CHECK (transaction_type IN ('BUY', 'SELL', 'DIVIDEND')),
+    transaction_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    shares NUMERIC(15, 6) NOT NULL,
+    price_per_share NUMERIC(15, 6) NOT NULL,
+    total_amount NUMERIC(15, 2) NOT NULL,
+    notes TEXT
+);
+
+-- Table for storing historical market data for performance tracking
+CREATE TABLE historical_market_data (
+    data_id SERIAL PRIMARY KEY,
+    ticker_symbol VARCHAR(10) NOT NULL,
+    date DATE NOT NULL,
+    open_price NUMERIC(15, 6),
+    high_price NUMERIC(15, 6),
+    low_price NUMERIC(15, 6),
+    close_price NUMERIC(15, 6),
+    volume BIGINT,
+    UNIQUE (ticker_symbol, date)
+);
